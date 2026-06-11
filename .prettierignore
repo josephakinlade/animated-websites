@@ -1,0 +1,6 @@
+.next
+.idea
+node_modules
+output
+package-lock.json
+AGENTS.md
