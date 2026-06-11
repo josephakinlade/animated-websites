@@ -15,9 +15,9 @@ export default function CustoPage() {
       <HeroSection />
       <DiscoverSection />
       <ProductSection />
-      <LifeSection />
+      {/* <LifeSection />
       <AppSection />
-      <AboutSection />
+      <AboutSection /> */}
       <Footer />
     </main>
   );
