@@ -1,41 +1,67 @@
+// components/TextReveal.tsx
 "use client";
 
-import { useRef } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
+import { useRef } from "react";
 
-gsap.registerPlugin(useGSAP);
+interface TextRevealProps {
+  text: string;
+  className?: string;
+  delay?: number;
+  stagger?: number;
+  duration?: number;
+}
 
-export default function SplitText({ text }: { text: string }) {
-  const textRef = useRef<HTMLHeadingElement>(null);
+export function TextReveal({
+  text,
+  className,
+  delay = 0,
+  stagger = 0.035,
+  duration = 1,
+}: TextRevealProps) {
+  const containerRef = useRef<HTMLHeadingElement>(null);
 
   useGSAP(
     () => {
-      const textElement = textRef.current;
-      if (!textElement) return;
+      const words =
+        containerRef.current?.querySelectorAll("[data-reveal-word]");
+      if (!words || words.length === 0) return;
 
-      const words = gsap.utils.toArray<HTMLElement>("[data-reveal-word]");
+      // Check for user accessibility preference
+      const prefersReducedMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)",
+      ).matches;
 
+      if (prefersReducedMotion) {
+        gsap.set(words, { yPercent: 0 });
+        return;
+      }
+
+      // Execute the clean reveal animation
       gsap.fromTo(
         words,
-        { yPercent: 100 },
+        { yPercent: 105 },
         {
           yPercent: 0,
-          duration: 1,
+          duration: duration,
+          stagger: stagger,
+          delay: delay,
           ease: "power4.out",
-          stagger: 0.03,
-          delay: 0.5,
         },
       );
     },
-    { scope: textRef },
+    { scope: containerRef },
   );
 
   return (
-    <h1 ref={textRef} className="text-5xl leading-tight font-medium">
-      {text.split(" ").map((word) => (
-        <span className="mr-[0.2em] inline-block overflow-hidden" key={word}>
-          <span className="inline-block" data-reveal-word>
+    <h1 ref={containerRef} className={className}>
+      {text.split(" ").map((word, index) => (
+        <span
+          key={`${word}-${index}`}
+          className="mr-[0.2em] inline-block overflow-hidden align-bottom"
+        >
+          <span data-reveal-word className="inline-block will-change-transform">
             {word}
           </span>
         </span>

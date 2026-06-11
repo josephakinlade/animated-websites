@@ -3,7 +3,10 @@ import { CustoLogo } from "./CustoLogo";
 
 export function Header() {
   return (
-    <header className="absolute top-0 right-0 left-0 z-30 px-7 pt-6 pb-[2.3125rem] text-white md:px-[5.3333333333vw] md:pt-[2.3125rem]">
+    <header
+      // data-speed="0.8"
+      className="absolute top-0 right-0 left-0 z-30 px-7 pt-6 pb-[2.3125rem] text-white md:px-[5.3333333333vw] md:pt-[2.3125rem]"
+    >
       <nav className="flex items-center justify-between text-white">
         <a href="#" aria-label="Custo home">
           <CustoLogo className="h-auto w-[7.6875rem] fill-current md:w-[10.5rem]" />

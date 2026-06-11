@@ -1,11 +1,11 @@
-import { AboutSection } from "./components/AboutSection";
-import { AppSection } from "./components/AppSection";
-import { DiscoverSection } from "./components/DiscoverSection";
-import { Footer } from "./components/Footer";
-import { Header } from "./components/Header";
-import { HeroSection } from "./components/HeroSection";
-import { LifeSection } from "./components/LifeSection";
-import { ProductSection } from "./components/ProductSection";
+import { AboutSection } from "./_components/AboutSection";
+import { AppSection } from "./_components/AppSection";
+import { DiscoverSection } from "./_components/DiscoverSection";
+import { Footer } from "./_components/Footer";
+import { Header } from "./_components/Header";
+import { HeroSection } from "./_components/HeroSection";
+import { LifeSection } from "./_components/LifeSection";
+import { ProductSection } from "./_components/ProductSection";
 import styles from "./custo.module.css";
 
 export default function CustoPage() {
