@@ -26,6 +26,9 @@ export function TextReveal({
 }: TextRevealProps) {
   const containerRef = useRef<HTMLElement>(null);
   const tag = as ?? "h1";
+  const setContainerRef = (node: HTMLElement | null) => {
+    containerRef.current = node;
+  };
 
   useGSAP(
     () => {
@@ -85,7 +88,7 @@ export function TextReveal({
 
   if (tag === "h2") {
     return (
-      <h2 ref={containerRef} className={className}>
+      <h2 ref={setContainerRef} className={className}>
         {content}
       </h2>
     );
@@ -93,7 +96,7 @@ export function TextReveal({
 
   if (tag === "h3") {
     return (
-      <h3 ref={containerRef} className={className}>
+      <h3 ref={setContainerRef} className={className}>
         {content}
       </h3>
     );
@@ -101,7 +104,7 @@ export function TextReveal({
 
   if (tag === "p") {
     return (
-      <p ref={containerRef} className={className}>
+      <p ref={setContainerRef} className={className}>
         {content}
       </p>
     );
@@ -109,7 +112,7 @@ export function TextReveal({
 
   if (tag === "span") {
     return (
-      <span ref={containerRef} className={className}>
+      <span ref={setContainerRef} className={className}>
         {content}
       </span>
     );
@@ -117,14 +120,14 @@ export function TextReveal({
 
   if (tag === "div") {
     return (
-      <div ref={containerRef} className={className}>
+      <div ref={setContainerRef} className={className}>
         {content}
       </div>
     );
   }
 
   return (
-    <h1 ref={containerRef} className={className}>
+    <h1 ref={setContainerRef} className={className}>
       {content}
     </h1>
   );
