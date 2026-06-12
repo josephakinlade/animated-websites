@@ -5,17 +5,18 @@
   --raspberry: #f4b9ce;
   --peach: #f3ad80;
   --water: #54b9df;
+  position: relative;
   min-height: 100vh;
-  overflow-x: hidden;
+  overflow: hidden;
   background:
     radial-gradient(
       circle at 12% 8%,
-      rgb(255 255 255 / 0.7),
+      rgb(255 255 255 / 0.72),
       transparent 16rem
     ),
     radial-gradient(
       circle at 82% 16%,
-      rgb(245 221 77 / 0.5),
+      rgb(245 221 77 / 0.48),
       transparent 18rem
     ),
     linear-gradient(180deg, #75d1ef 0%, #eaf8fa 46%, #fbf2cf 100%);
@@ -25,6 +26,19 @@
     Arial Rounded MT Bold,
     Arial,
     sans-serif;
+}
+
+.content {
+  position: relative;
+  min-height: 100vh;
+}
+
+.canvasLayer {
+  position: fixed;
+  inset: 0;
+  z-index: 3;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .loader {
@@ -58,7 +72,7 @@
 .water {
   position: absolute;
   inset: 0;
-  z-index: -2;
+  z-index: 0;
   overflow: hidden;
   background:
     radial-gradient(
@@ -79,7 +93,7 @@
   position: absolute;
   inset: -25%;
   content: "";
-  opacity: 0.32;
+  opacity: 0.34;
   background-image:
     repeating-linear-gradient(
       115deg,
@@ -104,7 +118,7 @@
 
 .nav {
   position: relative;
-  z-index: 4;
+  z-index: 5;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -123,6 +137,7 @@
   border-radius: 999px;
   padding: 0.75rem 1.1rem;
   color: inherit;
+  font-weight: 900;
   text-decoration: none;
   transition:
     transform 0.45s cubic-bezier(0.165, 0.84, 0.44, 1),
@@ -154,21 +169,16 @@
   padding: 2rem 0 0;
 }
 
+.heroCopyBlock {
+  position: relative;
+  z-index: 5;
+}
+
 .headline {
-  max-width: 10ch;
+  max-width: 9ch;
   font-size: clamp(4.8rem, 16vw, 16rem);
   line-height: 0.78;
   letter-spacing: 0;
-}
-
-.wordMask {
-  display: block;
-  overflow: hidden;
-}
-
-.word {
-  display: block;
-  transform: translateY(112%) rotate(4deg);
 }
 
 .heroCopy {
@@ -177,76 +187,28 @@
   line-height: 1.08;
 }
 
-.stageWrap {
+.heroStageSpace {
+  min-height: 42vh;
+}
+
+.variantSection {
   position: relative;
-  min-height: 44vh;
-}
-
-.stageShell {
-  position: absolute;
-  inset: -8rem -2rem -3rem;
-}
-
-.sparkle {
-  position: absolute;
-  width: clamp(2rem, 5vw, 5rem);
-  aspect-ratio: 1;
-  color: var(--cream);
-  filter: drop-shadow(0 0.35rem 0 rgb(23 17 15 / 0.18));
-  animation: sparklePulse 2.8s ease-in-out infinite;
-}
-
-.sparkle::before,
-.sparkle::after {
-  position: absolute;
-  inset: 0;
-  margin: auto;
-  content: "";
-  background: currentColor;
-  clip-path: polygon(
-    50% 0%,
-    60% 38%,
-    100% 50%,
-    60% 62%,
-    50% 100%,
-    40% 62%,
-    0% 50%,
-    40% 38%
-  );
-}
-
-.sparkle::after {
-  inset: 24%;
-  color: var(--lemon);
-}
-
-.marquee {
-  display: flex;
-  overflow: hidden;
-  border-block: 2px solid var(--ink);
-  background: var(--lemon);
-  font-size: clamp(2.5rem, 8vw, 7rem);
-  line-height: 1;
-  white-space: nowrap;
-}
-
-.marquee span {
-  display: inline-flex;
-  min-width: max-content;
-  animation: marquee 18s linear infinite;
-}
-
-.section {
+  z-index: 5;
+  min-height: 100dvh;
   padding: clamp(5rem, 10vw, 10rem) 1.25rem;
 }
 
-.sectionInner {
+.variantIntro {
+  display: grid;
   max-width: 88rem;
-  margin: 0 auto;
+  margin: 0 auto clamp(2rem, 5vw, 4rem);
+  gap: 1rem;
 }
 
 .flavorGrid {
   display: grid;
+  max-width: 88rem;
+  margin: 0 auto;
   gap: 1rem;
 }
 
@@ -283,10 +245,13 @@
 }
 
 .storyBand {
+  position: relative;
+  z-index: 5;
   display: grid;
   gap: 1rem;
   border-block: 2px solid var(--ink);
   background: #f8dce8;
+  padding: 1rem;
 }
 
 .storyCard {
@@ -304,6 +269,8 @@
 }
 
 .footer {
+  position: relative;
+  z-index: 5;
   display: grid;
   gap: 2rem;
   border-top: 2px solid var(--ink);
@@ -312,20 +279,31 @@
   color: var(--cream);
 }
 
+.footerButton {
+  color: var(--ink);
+  align-self: end;
+}
+
 @media (min-width: 768px) {
   .heroGrid {
-    grid-template-columns: 1fr minmax(26rem, 44vw);
+    grid-template-columns: minmax(0, 0.92fr) minmax(26rem, 1fr);
     align-items: center;
     gap: 0;
     padding-top: 0;
   }
 
-  .stageWrap {
-    min-height: 72vh;
+  .heroStageSpace {
+    min-height: 76vh;
+  }
+
+  .variantIntro {
+    grid-template-columns: 0.8fr 1.2fr;
+    align-items: end;
   }
 
   .flavorGrid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+    padding-left: 38vw;
   }
 
   .storyBand {
@@ -340,31 +318,17 @@
 
 @media (prefers-reduced-motion: reduce) {
   .water::before,
-  .water::after,
-  .sparkle,
-  .marquee span {
+  .water::after {
     animation: none;
   }
 
-  .word {
-    transform: none;
+  .canvasLayer {
+    opacity: 1;
   }
 }
 
 @keyframes tide {
   to {
     transform: translate3d(8%, 5%, 0) rotate(2deg);
-  }
-}
-
-@keyframes sparklePulse {
-  50% {
-    transform: rotate(12deg) scale(1.15);
-  }
-}
-
-@keyframes marquee {
-  to {
-    transform: translateX(-50%);
   }
 }

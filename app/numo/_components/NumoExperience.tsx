@@ -2,11 +2,11 @@
 
 import type { CSSProperties } from "react";
 import { useEffect, useRef, useState } from "react";
+import { TextReveal } from "@/components/text-reveal";
 import gsap from "gsap";
+import { ScrollSmoother } from "gsap/ScrollSmoother";
 import { CanScene } from "./CanScene";
 import styles from "../numo.module.css";
-
-const headline = ["Summer", "in a", "can."];
 
 const flavors = [
   {
@@ -34,11 +34,21 @@ const flavors = [
 
 export function NumoExperience() {
   const pageRef = useRef<HTMLElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
     const page = pageRef.current;
-    if (!page) return;
+    const content = contentRef.current;
+    if (!page || !content) return;
+
+    const smoother = ScrollSmoother.create({
+      content,
+      effects: true,
+      smooth: 1.08,
+      smoothTouch: 0.08,
+      wrapper: page,
+    });
 
     const context = gsap.context(() => {
       const reduceMotion = window.matchMedia(
@@ -47,12 +57,7 @@ export function NumoExperience() {
 
       if (reduceMotion) {
         gsap.set("[data-numo-loader]", { display: "none" });
-        gsap.set("[data-entry]", {
-          clearProps: "all",
-          opacity: 1,
-          y: 0,
-          scale: 1,
-        });
+        gsap.set("[data-entry], [data-can-stage]", { opacity: 1, y: 0 });
         setIsLoaded(true);
         return;
       }
@@ -67,14 +72,14 @@ export function NumoExperience() {
       timeline
         .fromTo(
           "[data-loader-word]",
-          { yPercent: 115, rotate: 5 },
-          { yPercent: 0, rotate: 0, duration: 0.75 },
+          { yPercent: 112, rotate: 4 },
+          { yPercent: 0, rotate: 0, duration: 0.72 },
         )
         .to("[data-loader-word]", {
-          yPercent: -115,
+          yPercent: -112,
           rotate: -4,
-          duration: 0.75,
-          delay: 0.35,
+          duration: 0.72,
+          delay: 0.28,
         })
         .to(
           "[data-numo-loader]",
@@ -83,31 +88,19 @@ export function NumoExperience() {
             duration: 0.9,
             ease: "expo.inOut",
           },
-          "-=0.25",
+          "-=0.18",
         )
         .fromTo(
-          "[data-hero-word]",
-          { yPercent: 112, rotate: 4 },
-          { yPercent: 0, rotate: 0, duration: 1.05, stagger: 0.09 },
-          "-=0.35",
-        )
-        .fromTo(
-          "[data-entry='copy']",
+          "[data-entry]",
           { y: 34, opacity: 0 },
           { y: 0, opacity: 1, duration: 0.9, stagger: 0.08 },
-          "-=0.72",
+          "-=0.48",
         )
         .fromTo(
-          "[data-entry='nav']",
-          { y: -28, opacity: 0 },
-          { y: 0, opacity: 1, duration: 0.9 },
-          "-=1",
-        )
-        .fromTo(
-          "[data-sparkle]",
-          { scale: 0, rotate: -35 },
-          { scale: 1, rotate: 0, duration: 0.75, stagger: 0.12 },
-          "-=0.65",
+          "[data-can-stage]",
+          { opacity: 0 },
+          { opacity: 1, duration: 0.75 },
+          "-=0.7",
         );
 
       gsap.utils.toArray<HTMLElement>("[data-magnetic]").forEach((item) => {
@@ -147,119 +140,106 @@ export function NumoExperience() {
             ease: "power3.out",
             scrollTrigger: {
               trigger: item,
-              start: "top 82%",
+              start: "top 84%",
             },
           },
         );
       });
     }, page);
 
-    return () => context.revert();
+    return () => {
+      context.revert();
+      smoother.kill();
+    };
   }, []);
 
   return (
-    <main ref={pageRef} className={styles.page}>
+    <main
+      ref={pageRef}
+      className={styles.page}
+      data-numo-smooth-wrapper
+      data-loaded={isLoaded}
+    >
       <div aria-hidden={isLoaded} className={styles.loader} data-numo-loader>
         <div className={styles.loaderWord}>
           <span data-loader-word>NUMO</span>
         </div>
       </div>
 
-      <section className={styles.hero}>
-        <div className={styles.water} />
-
-        <nav className={styles.nav} data-entry="nav">
-          <a
-            className="text-3xl leading-none font-black tracking-normal"
-            href="/numo"
-          >
-            NUMO
-          </a>
-          <div className="flex items-center gap-3 text-sm font-black uppercase md:text-base">
-            <a className={styles.ghostButton} data-magnetic href="#flavors">
-              Flavours
-            </a>
-            <a className={styles.pillButton} data-magnetic href="#shop">
-              Scan Play Win
-            </a>
-          </div>
-        </nav>
-
-        <div className={styles.heroGrid}>
-          <div>
-            <h1 className={styles.headline} aria-label="Summer in a can.">
-              {headline.map((word) => (
-                <span className={styles.wordMask} key={word}>
-                  <span className={styles.word} data-hero-word>
-                    {word}
-                  </span>
-                </span>
-              ))}
-            </h1>
-            <div className="mt-8 grid gap-5 md:max-w-xl md:grid-cols-[1fr_auto] md:items-end">
-              <p className={styles.heroCopy} data-entry="copy">
-                A playful sparkling drink brand built around joy, bold labels,
-                tiny games, and the easy feeling of opening something bright.
-              </p>
-              <a
-                className={styles.pillButton}
-                data-entry="copy"
-                data-magnetic
-                href="#flavors"
-              >
-                Explore the fizz
-              </a>
-            </div>
-          </div>
-
-          <div className={styles.stageWrap} aria-label="Animated Numo cans">
-            <div className={styles.stageShell}>
-              <CanScene />
-            </div>
-            <span
-              className={styles.sparkle}
-              data-sparkle
-              style={{ left: "4%", top: "12%" }}
-            />
-            <span
-              className={styles.sparkle}
-              data-sparkle
-              style={{ right: "10%", top: "24%" }}
-            />
-            <span
-              className={styles.sparkle}
-              data-sparkle
-              style={{ left: "26%", bottom: "5%" }}
-            />
-          </div>
-        </div>
-      </section>
-
-      <div className={styles.marquee} aria-hidden="true">
-        <span>
-          SCAN PLAY WIN&nbsp; NUMO SPARKLING&nbsp; SUMMER IN A CAN&nbsp;{" "}
-        </span>
-        <span>
-          SCAN PLAY WIN&nbsp; NUMO SPARKLING&nbsp; SUMMER IN A CAN&nbsp;{" "}
-        </span>
+      <div aria-hidden="true" className={styles.canvasLayer} data-can-stage>
+        <CanScene />
       </div>
 
-      <section id="flavors" className={styles.section}>
-        <div className={styles.sectionInner}>
-          <div className="mb-10 grid gap-4 md:grid-cols-[0.8fr_1.2fr] md:items-end">
-            <p className="text-xl leading-tight uppercase" data-reveal>
-              three sparkling moods
-            </p>
-            <h2
-              className="text-5xl leading-none font-black tracking-normal md:text-8xl"
-              data-reveal
+      <div ref={contentRef} className={styles.content} data-numo-smooth-content>
+        <section className={styles.hero}>
+          <div className={styles.water} />
+
+          <nav className={styles.nav} data-entry>
+            <a
+              className="text-3xl leading-none font-black tracking-normal"
+              href="/numo"
             >
-              Light flavours, loud personality.
-            </h2>
+              NUMO
+            </a>
+            <div className="flex items-center gap-3 text-sm font-black uppercase md:text-base">
+              <a className={styles.ghostButton} data-magnetic href="#flavors">
+                Flavours
+              </a>
+              <a className={styles.pillButton} data-magnetic href="#shop">
+                Scan Play Win
+              </a>
+            </div>
+          </nav>
+
+          <div className={styles.heroGrid}>
+            <div className={styles.heroCopyBlock}>
+              <TextReveal
+                className={styles.headline}
+                delay={2.05}
+                duration={1.05}
+                text="NUMO"
+              />
+              <div className="mt-8 grid gap-5 md:max-w-xl md:grid-cols-[1fr_auto] md:items-end">
+                <TextReveal
+                  as="p"
+                  className={styles.heroCopy}
+                  delay={2.25}
+                  duration={0.9}
+                  text="A playful sparkling drink brand built around joy, bold labels, tiny games, fresh fruit, and the easy feeling of opening something bright."
+                />
+                <a
+                  className={styles.pillButton}
+                  data-entry
+                  data-magnetic
+                  href="#flavors"
+                >
+                  Explore the fizz
+                </a>
+              </div>
+            </div>
+
+            <div className={styles.heroStageSpace} />
+          </div>
+        </section>
+
+        <section id="flavors" className={styles.variantSection}>
+          <div className={styles.variantIntro}>
+            <TextReveal
+              as="p"
+              className="text-xl leading-tight uppercase"
+              scroll
+              text="three sparkling moods"
+            />
+            <TextReveal
+              as="h2"
+              className="max-w-5xl text-5xl leading-none font-black tracking-normal md:text-8xl"
+              scroll
+              text="Light flavours, loud personality."
+            />
           </div>
 
           <div className={styles.flavorGrid}>
-            {flavors.map((flavor) => (
+            {flavors.map((flavor, index) => (
               <article
                 className={styles.flavorCard}
                 data-reveal
@@ -271,53 +251,81 @@ export function NumoExperience() {
                   } as CSSProperties
                 }
               >
-                <p className="mb-3 text-lg font-black uppercase">
-                  0{flavors.indexOf(flavor) + 1}
-                </p>
-                <h3 className="text-5xl leading-none font-black tracking-normal">
-                  {flavor.name}
-                </h3>
-                <p className="mt-5 max-w-xs text-2xl leading-tight">
-                  {flavor.text}
-                </p>
+                <TextReveal
+                  as="p"
+                  className="mb-3 text-lg font-black uppercase"
+                  scroll
+                  text={`0${index + 1}`}
+                />
+                <TextReveal
+                  as="h3"
+                  className="text-5xl leading-none font-black tracking-normal"
+                  scroll
+                  text={flavor.name}
+                />
+                <TextReveal
+                  as="p"
+                  className="mt-5 max-w-xs text-2xl leading-tight"
+                  scroll
+                  text={flavor.text}
+                />
                 <span className={styles.flavorIcon} aria-hidden="true">
                   {flavor.icon}
                 </span>
               </article>
             ))}
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section className={styles.storyBand}>
-        <div className={styles.storyCard} data-reveal>
-          <p className="mb-8 text-xl uppercase">packaging system</p>
-          <h2 className="max-w-5xl text-5xl leading-none font-black tracking-normal md:text-8xl">
-            Built for shelf impact, made to feel collectible.
-          </h2>
-        </div>
-        <div className={styles.storyCard} data-reveal>
-          <p className="text-2xl leading-tight md:text-4xl">
-            Each can becomes a small game ticket: scan, play, unlock flavours,
-            collect points. The motion language stays bouncy, tactile, and
-            slightly imperfect, like cold cans rolling around in a beach cooler.
-          </p>
-        </div>
-      </section>
+        <section className={styles.storyBand}>
+          <div className={styles.storyCard} data-reveal>
+            <TextReveal
+              as="p"
+              className="mb-8 text-xl uppercase"
+              scroll
+              text="packaging system"
+            />
+            <TextReveal
+              as="h2"
+              className="max-w-5xl text-5xl leading-none font-black tracking-normal md:text-8xl"
+              scroll
+              text="Built for shelf impact, made to feel collectible."
+            />
+          </div>
+          <div className={styles.storyCard} data-reveal>
+            <TextReveal
+              as="p"
+              className="text-2xl leading-tight md:text-4xl"
+              scroll
+              text="Each can becomes a small game ticket: scan, play, unlock flavours, collect points. The motion language stays bouncy, tactile, and slightly imperfect, like cold cans rolling through a beach cooler."
+            />
+          </div>
+        </section>
 
-      <footer id="shop" className={styles.footer}>
-        <div>
-          <p className="text-7xl leading-none font-black tracking-normal md:text-9xl">
-            NUMO
-          </p>
-          <p className="mt-4 max-w-xl text-2xl leading-tight">
-            Sparkling cans for bright breaks, beach walks, and small wins.
-          </p>
-        </div>
-        <a className={styles.pillButton} data-magnetic href="/numo">
-          Back to top
-        </a>
-      </footer>
+        <footer id="shop" className={styles.footer}>
+          <div data-reveal>
+            <TextReveal
+              as="h2"
+              className="text-7xl leading-none font-black tracking-normal md:text-9xl"
+              scroll
+              text="NUMO"
+            />
+            <TextReveal
+              as="p"
+              className="mt-4 max-w-xl text-2xl leading-tight"
+              scroll
+              text="Sparkling cans for bright breaks, beach walks, and small wins."
+            />
+          </div>
+          <a
+            className={`${styles.pillButton} ${styles.footerButton}`}
+            data-magnetic
+            href="#"
+          >
+            Back to top
+          </a>
+        </footer>
+      </div>
     </main>
   );
 }

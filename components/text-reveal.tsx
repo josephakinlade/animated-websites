@@ -11,6 +11,8 @@ interface TextRevealProps {
   delay?: number;
   stagger?: number;
   duration?: number;
+  as?: "h1" | "h2" | "h3" | "p" | "span" | "div";
+  scroll?: boolean;
 }
 
 export function TextReveal({
@@ -19,8 +21,11 @@ export function TextReveal({
   delay = 0,
   stagger = 0.035,
   duration = 1,
+  as,
+  scroll = false,
 }: TextRevealProps) {
-  const containerRef = useRef<HTMLHeadingElement>(null);
+  const containerRef = useRef<HTMLElement>(null);
+  const tag = as ?? "h1";
 
   useGSAP(
     () => {
@@ -39,33 +44,88 @@ export function TextReveal({
       }
 
       // Execute the clean reveal animation
-      gsap.fromTo(
-        words,
-        { yPercent: 105 },
-        {
-          yPercent: 0,
-          duration: duration,
-          stagger: stagger,
-          delay: delay,
-          ease: "power4.out",
-        },
-      );
+      const animation = {
+        yPercent: 0,
+        duration: duration,
+        stagger: stagger,
+        delay: delay,
+        ease: "power4.out",
+      };
+
+      if (scroll) {
+        gsap.fromTo(
+          words,
+          { yPercent: 105 },
+          {
+            ...animation,
+            scrollTrigger: {
+              trigger: containerRef.current,
+              start: "top 84%",
+            },
+          },
+        );
+        return;
+      }
+
+      gsap.fromTo(words, { yPercent: 105 }, animation);
     },
-    { scope: containerRef },
+    { dependencies: [delay, duration, scroll, stagger], scope: containerRef },
   );
+
+  const content = text.split(" ").map((word, index) => (
+    <span
+      key={`${word}-${index}`}
+      className="mr-[0.2em] inline-block overflow-hidden align-bottom"
+    >
+      <span data-reveal-word className="inline-block will-change-transform">
+        {word}
+      </span>
+    </span>
+  ));
+
+  if (tag === "h2") {
+    return (
+      <h2 ref={containerRef} className={className}>
+        {content}
+      </h2>
+    );
+  }
+
+  if (tag === "h3") {
+    return (
+      <h3 ref={containerRef} className={className}>
+        {content}
+      </h3>
+    );
+  }
+
+  if (tag === "p") {
+    return (
+      <p ref={containerRef} className={className}>
+        {content}
+      </p>
+    );
+  }
+
+  if (tag === "span") {
+    return (
+      <span ref={containerRef} className={className}>
+        {content}
+      </span>
+    );
+  }
+
+  if (tag === "div") {
+    return (
+      <div ref={containerRef} className={className}>
+        {content}
+      </div>
+    );
+  }
 
   return (
     <h1 ref={containerRef} className={className}>
-      {text.split(" ").map((word, index) => (
-        <span
-          key={`${word}-${index}`}
-          className="mr-[0.2em] inline-block overflow-hidden align-bottom"
-        >
-          <span data-reveal-word className="inline-block will-change-transform">
-            {word}
-          </span>
-        </span>
-      ))}
+      {content}
     </h1>
   );
 }

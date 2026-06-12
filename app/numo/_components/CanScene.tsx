@@ -1,45 +1,26 @@
 "use client";
 
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { Canvas, useFrame, useLoader, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import gsap from "gsap";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import * as THREE from "three";
+
+const canPath = "/aluminium_can-_350ml.glb";
 
 type Flavor = {
   bg: string;
   dark: string;
   fruit: "lemon" | "peach" | "raspberry";
   label: string;
-  rotate: number;
-  x: number;
 };
 
-const flavors: Flavor[] = [
-  {
-    bg: "#f7ec98",
-    dark: "#e7ca22",
-    fruit: "lemon",
-    label: "lemon sparkling",
-    rotate: -0.16,
-    x: -1.82,
-  },
-  {
-    bg: "#f7c7a9",
-    dark: "#ef9365",
-    fruit: "peach",
-    label: "peach sparkling",
-    rotate: 0.06,
-    x: 0,
-  },
-  {
-    bg: "#f4c0d2",
-    dark: "#df4962",
-    fruit: "raspberry",
-    label: "raspberry sparkling",
-    rotate: 0.18,
-    x: 1.82,
-  },
-];
+const heroFlavor: Flavor = {
+  bg: "#f7ec98",
+  dark: "#e7ca22",
+  fruit: "lemon",
+  label: "lemon sparkling",
+};
 
 function roundedRect(
   ctx: CanvasRenderingContext2D,
@@ -79,61 +60,48 @@ function drawSparkle(
   ctx.restore();
 }
 
-function drawBarcode(ctx: CanvasRenderingContext2D, x: number, y: number) {
-  ctx.fillStyle = "#17110f";
-  const bars = [6, 2, 4, 8, 3, 5, 2, 9, 4, 3, 7, 2, 5, 8, 3, 6, 2, 5, 9, 3];
-  let cursor = x;
-  bars.forEach((width, index) => {
-    if (index % 2 === 0) {
-      ctx.fillRect(cursor, y, width, 118);
-    }
-    cursor += width + 4;
-  });
-  ctx.font = "700 18px Arial, sans-serif";
-  ctx.fillText("7584 95 6 86 9504", x + 8, y - 12);
-}
-
 function drawQr(ctx: CanvasRenderingContext2D, x: number, y: number) {
   ctx.save();
   ctx.translate(x, y);
   ctx.fillStyle = "#f4d62c";
   ctx.strokeStyle = "#17110f";
-  ctx.lineWidth = 8;
-  roundedRect(ctx, 0, 0, 165, 165, 24);
+  ctx.lineWidth = 7;
+  roundedRect(ctx, 0, 0, 150, 150, 22);
   ctx.fill();
   ctx.stroke();
 
   ctx.fillStyle = "#17110f";
-  for (let row = 0; row < 12; row += 1) {
-    for (let col = 0; col < 12; col += 1) {
-      const on = (row * 7 + col * 11 + row * col) % 5 < 2;
-      if (on) {
-        ctx.fillRect(22 + col * 10, 22 + row * 10, 8, 8);
+  for (let row = 0; row < 11; row += 1) {
+    for (let col = 0; col < 11; col += 1) {
+      if ((row * 7 + col * 11 + row * col) % 5 < 2) {
+        ctx.fillRect(20 + col * 10, 20 + row * 10, 8, 8);
       }
     }
   }
 
-  [0, 96].forEach((offsetX) => {
-    [0, 96].forEach((offsetY) => {
-      if (offsetX === 96 && offsetY === 96) return;
-      ctx.strokeStyle = "#17110f";
-      ctx.lineWidth = 7;
-      ctx.strokeRect(22 + offsetX, 22 + offsetY, 42, 42);
-      ctx.fillRect(35 + offsetX, 35 + offsetY, 16, 16);
+  [0, 86].forEach((offsetX) => {
+    [0, 86].forEach((offsetY) => {
+      if (offsetX === 86 && offsetY === 86) return;
+      ctx.strokeRect(20 + offsetX, 20 + offsetY, 40, 40);
+      ctx.fillRect(33 + offsetX, 33 + offsetY, 15, 15);
     });
   });
   ctx.restore();
 }
 
-function drawFruitMascot(ctx: CanvasRenderingContext2D, flavor: Flavor) {
-  const cx = 835;
+function drawBarcode(ctx: CanvasRenderingContext2D, x: number, y: number) {
+  const bars = [6, 2, 4, 8, 3, 5, 2, 9, 4, 3, 7, 2, 5, 8, 3, 6, 2, 5, 9, 3];
+  let cursor = x;
+  ctx.fillStyle = "#17110f";
+  bars.forEach((width, index) => {
+    if (index % 2 === 0) ctx.fillRect(cursor, y, width, 112);
+    cursor += width + 4;
+  });
+}
+
+function drawFruitMascot(ctx: CanvasRenderingContext2D) {
+  const cx = 840;
   const cy = 520;
-  const fruitColor =
-    flavor.fruit === "lemon"
-      ? "#f4d92f"
-      : flavor.fruit === "peach"
-        ? "#ef9469"
-        : "#db4860";
 
   ctx.save();
   ctx.strokeStyle = "#17110f";
@@ -142,128 +110,54 @@ function drawFruitMascot(ctx: CanvasRenderingContext2D, flavor: Flavor) {
   ctx.lineJoin = "round";
 
   ctx.beginPath();
-  ctx.moveTo(cx - 105, cy + 120);
-  ctx.lineTo(cx - 160, cy + 210);
+  ctx.moveTo(cx - 108, cy + 110);
+  ctx.lineTo(cx - 160, cy + 205);
   ctx.moveTo(cx + 95, cy + 120);
-  ctx.lineTo(cx + 160, cy + 210);
+  ctx.lineTo(cx + 165, cy + 205);
+  ctx.moveTo(cx - 110, cy + 24);
+  ctx.lineTo(cx - 215, cy - 50);
+  ctx.moveTo(cx + 110, cy + 24);
+  ctx.lineTo(cx + 215, cy - 50);
   ctx.stroke();
 
+  ctx.fillStyle = "#f4d92f";
   ctx.beginPath();
-  ctx.moveTo(cx - 115, cy + 30);
-  ctx.lineTo(cx - 220, cy - 50);
-  ctx.moveTo(cx + 115, cy + 30);
-  ctx.lineTo(cx + 220, cy - 40);
-  ctx.stroke();
-
-  ctx.fillStyle = fruitColor;
-  ctx.beginPath();
-  if (flavor.fruit === "raspberry") {
-    for (let i = 0; i < 13; i += 1) {
-      const angle = (i / 13) * Math.PI * 2;
-      const radius = i < 7 ? 82 : 45;
-      ctx.moveTo(cx + Math.cos(angle) * radius, cy + Math.sin(angle) * radius);
-      ctx.arc(
-        cx + Math.cos(angle) * radius,
-        cy + Math.sin(angle) * radius,
-        48,
-        0,
-        Math.PI * 2,
-      );
-    }
-  } else {
-    ctx.ellipse(
-      cx,
-      cy,
-      135,
-      158,
-      flavor.fruit === "lemon" ? 0.12 : -0.16,
-      0,
-      Math.PI * 2,
-    );
-  }
+  ctx.ellipse(cx, cy, 132, 160, 0.16, 0, Math.PI * 2);
   ctx.fill();
   ctx.stroke();
 
-  ctx.fillStyle = "#6fb653";
+  ctx.fillStyle = "#71b75a";
   ctx.beginPath();
-  ctx.ellipse(cx + 82, cy - 175, 74, 29, -0.55, 0, Math.PI * 2);
+  ctx.ellipse(cx + 82, cy - 176, 74, 30, -0.55, 0, Math.PI * 2);
   ctx.fill();
   ctx.stroke();
 
   ctx.fillStyle = "#fff9dc";
   ctx.beginPath();
-  ctx.arc(cx - 42, cy - 34, 28, 0, Math.PI * 2);
-  ctx.arc(cx + 42, cy - 34, 28, 0, Math.PI * 2);
+  ctx.arc(cx - 44, cy - 34, 29, 0, Math.PI * 2);
+  ctx.arc(cx + 43, cy - 34, 29, 0, Math.PI * 2);
   ctx.fill();
   ctx.stroke();
 
   ctx.fillStyle = "#17110f";
   ctx.beginPath();
-  ctx.arc(cx - 34, cy - 30, 11, 0, Math.PI * 2);
-  ctx.arc(cx + 50, cy - 30, 11, 0, Math.PI * 2);
+  ctx.arc(cx - 35, cy - 30, 11, 0, Math.PI * 2);
+  ctx.arc(cx + 51, cy - 30, 11, 0, Math.PI * 2);
   ctx.fill();
 
   ctx.beginPath();
-  ctx.arc(cx, cy + 32, 58, 0.15, Math.PI - 0.15);
+  ctx.arc(cx, cy + 34, 58, 0.15, Math.PI - 0.15);
   ctx.stroke();
 
   ctx.fillStyle = "#f06f78";
   ctx.beginPath();
-  ctx.arc(cx - 80, cy + 34, 20, 0, Math.PI * 2);
-  ctx.arc(cx + 82, cy + 34, 20, 0, Math.PI * 2);
+  ctx.arc(cx - 78, cy + 34, 18, 0, Math.PI * 2);
+  ctx.arc(cx + 80, cy + 34, 18, 0, Math.PI * 2);
   ctx.fill();
 
-  ctx.strokeStyle = "#17110f";
-  ctx.lineWidth = 9;
-  for (let i = 0; i < 4; i += 1) {
-    ctx.beginPath();
-    ctx.arc(cx - 180 + i * 35, cy + 15, 72, -0.3, 0.3);
-    ctx.stroke();
-  }
-
-  drawSparkle(ctx, cx - 230, cy - 155, 24);
-  drawSparkle(ctx, cx + 220, cy - 145, 22);
-  drawSparkle(ctx, cx - 175, cy + 165, 20);
-
-  ctx.restore();
-}
-
-function drawNutrition(ctx: CanvasRenderingContext2D, flavor: Flavor) {
-  ctx.save();
-  ctx.translate(1110, 300);
-  ctx.strokeStyle = "#17110f";
-  ctx.fillStyle = "#f9ecd7";
-  ctx.lineWidth = 8;
-  roundedRect(ctx, 0, 0, 330, 260, 34);
-  ctx.fill();
-  ctx.stroke();
-
-  ctx.fillStyle = flavor.dark;
-  roundedRect(ctx, 0, 0, 330, 64, 30);
-  ctx.fill();
-  ctx.stroke();
-
-  ctx.fillStyle = "#17110f";
-  ctx.font = "700 30px Arial Rounded MT Bold, Arial, sans-serif";
-  ctx.fillText("nutrition facts (per 330 ml)", 28, 42);
-  ctx.font = "500 28px Arial Rounded MT Bold, Arial, sans-serif";
-  const rows = [
-    [
-      "calories:",
-      flavor.fruit === "peach"
-        ? "34"
-        : flavor.fruit === "raspberry"
-          ? "32"
-          : "28",
-    ],
-    ["total carbohydrates:", flavor.fruit === "lemon" ? "7 g" : "8 g"],
-    ["sugars:", flavor.fruit === "lemon" ? "6 g" : "7 g"],
-    ["sodium:", "5 mg"],
-  ];
-  rows.forEach(([label, value], index) => {
-    ctx.fillText(label, 30, 108 + index * 36);
-    ctx.fillText(value, 260, 108 + index * 36);
-  });
+  drawSparkle(ctx, cx - 224, cy - 150, 23);
+  drawSparkle(ctx, cx + 215, cy - 140, 22);
+  drawSparkle(ctx, cx - 170, cy + 160, 19);
   ctx.restore();
 }
 
@@ -279,33 +173,35 @@ function makeLabelTexture(flavor: Flavor) {
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   ctx.fillStyle = "#17110f";
-  ctx.font = "900 250px Arial Black, Impact, sans-serif";
-  ctx.fillText("NUMO", 610, 225);
+  ctx.font = "900 252px Arial Black, Impact, sans-serif";
+  ctx.fillText("NUMO", 602, 224);
 
   ctx.fillStyle = flavor.dark;
   ctx.strokeStyle = "#17110f";
   ctx.lineWidth = 10;
-  roundedRect(ctx, 770, 210, 370, 76, 38);
+  roundedRect(ctx, 770, 210, 378, 76, 38);
   ctx.fill();
   ctx.stroke();
 
   ctx.fillStyle = "#17110f";
   ctx.font = "500 42px Arial Rounded MT Bold, Arial, sans-serif";
-  ctx.fillText(flavor.label, 825, 260);
+  ctx.fillText(flavor.label, 820, 260);
 
   ctx.font = "600 32px Arial Rounded MT Bold, Arial, sans-serif";
   ["scan", "play", "win"].forEach((label, index) => {
     ctx.fillStyle = flavor.dark;
     ctx.strokeStyle = "#17110f";
-    ctx.lineWidth = 8;
-    roundedRect(ctx, 300, 88 + index * 70, 120, 48, 24);
+    roundedRect(ctx, 300, 90 + index * 70, 120, 48, 24);
     ctx.fill();
     ctx.stroke();
     ctx.fillStyle = "#17110f";
-    ctx.fillText(label, 333, 122 + index * 70);
+    ctx.fillText(label, 333, 124 + index * 70);
   });
 
-  ctx.fillStyle = "#17110f";
+  ctx.font = "500 28px Arial Rounded MT Bold, Arial, sans-serif";
+  ctx.fillText("Step into the world of NUMO Play", 108, 90);
+  ctx.fillText("a space inspired by sparkling flavor,", 108, 128);
+  ctx.fillText("bold color, and vibrant energy.", 108, 166);
   ctx.font = "600 34px Arial Rounded MT Bold, Arial, sans-serif";
   ctx.fillText("scan the QR code to:", 168, 345);
   drawQr(ctx, 120, 395);
@@ -317,21 +213,35 @@ function makeLabelTexture(flavor: Flavor) {
     "collect sparkle points",
     "win NUMO merch",
   ].forEach((line, index) => {
-    drawSparkle(ctx, 350, 415 + index * 55, 13);
+    drawSparkle(ctx, 348, 414 + index * 55, 13);
     ctx.fillStyle = "#17110f";
-    ctx.fillText(line, 385, 425 + index * 55);
+    ctx.fillText(line, 382, 424 + index * 55);
   });
 
-  ctx.font = "500 28px Arial Rounded MT Bold, Arial, sans-serif";
-  ctx.fillText("Step into the world of NUMO Play", 108, 90);
-  ctx.fillText("a space inspired by sparkling flavor,", 108, 128);
-  ctx.fillText("bold color, and vibrant energy.", 108, 166);
+  drawFruitMascot(ctx);
 
-  drawFruitMascot(ctx, flavor);
-  drawNutrition(ctx, flavor);
+  ctx.strokeStyle = "#17110f";
+  ctx.fillStyle = "#f9ecd7";
+  ctx.lineWidth = 8;
+  roundedRect(ctx, 1110, 300, 330, 260, 34);
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = flavor.dark;
+  roundedRect(ctx, 1110, 300, 330, 64, 30);
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = "#17110f";
+  ctx.font = "700 30px Arial Rounded MT Bold, Arial, sans-serif";
+  ctx.fillText("nutrition facts (per 330 ml)", 1138, 342);
+  ctx.font = "500 28px Arial Rounded MT Bold, Arial, sans-serif";
+  [
+    "calories:                  28",
+    "total carbohydrates:     7 g",
+    "sugars:                    6 g",
+    "sodium:                  5 mg",
+  ].forEach((row, index) => ctx.fillText(row, 1140, 408 + index * 36));
   drawBarcode(ctx, 1140, 688);
 
-  ctx.fillStyle = "#17110f";
   ctx.font = "700 26px Arial Rounded MT Bold, Arial, sans-serif";
   ctx.fillText("330 ml", 690, 845);
   ctx.fillText("11.2 fl oz", 1010, 845);
@@ -346,119 +256,231 @@ function makeLabelTexture(flavor: Flavor) {
   return texture;
 }
 
-function NumoCan({ flavor, index }: { flavor: Flavor; index: number }) {
-  const canRef = useRef<THREE.Group>(null);
-  const texture = useMemo(() => makeLabelTexture(flavor), [flavor]);
+function cloneWithMaterials(source: THREE.Group) {
+  const clone = source.clone(true);
 
-  useEffect(() => () => texture.dispose(), [texture]);
+  clone.updateMatrixWorld(true);
+  clone.traverse((object) => {
+    if (!(object instanceof THREE.Mesh)) return;
 
-  useEffect(() => {
-    const can = canRef.current;
-    if (!can) return;
-
-    gsap.from(can.position, {
-      y: -2.8,
-      duration: 1.35,
-      ease: "back.out(1.35)",
-      delay: 1.05 + index * 0.12,
+    object.castShadow = true;
+    object.receiveShadow = true;
+    object.material = new THREE.MeshPhysicalMaterial({
+      color: "#c9c4b8",
+      clearcoat: 0.6,
+      metalness: 0.92,
+      roughness: 0.18,
     });
+  });
 
-    gsap.from(can.scale, {
-      x: 0.65,
-      y: 0.65,
-      z: 0.65,
-      duration: 1.35,
-      ease: "back.out(1.35)",
-      delay: 1.05 + index * 0.12,
-    });
-  }, [index]);
+  const box = new THREE.Box3().setFromObject(clone);
+  const center = box.getCenter(new THREE.Vector3());
+  const size = box.getSize(new THREE.Vector3());
+  const maxDimension = Math.max(size.x, size.y, size.z);
+  clone.position.sub(center);
+  if (maxDimension > 0) {
+    clone.scale.setScalar(2.65 / maxDimension);
+  }
+
+  return clone;
+}
+
+function LabelSleeve({ texture }: { texture: THREE.Texture }) {
+  return (
+    <mesh rotation={[0, -0.42, 0]}>
+      <cylinderGeometry args={[0.742, 0.742, 2.22, 160, 1, true]} />
+      <meshPhysicalMaterial
+        clearcoat={0.78}
+        clearcoatRoughness={0.16}
+        map={texture}
+        metalness={0.04}
+        roughness={0.35}
+        side={THREE.DoubleSide}
+        transparent
+      />
+    </mesh>
+  );
+}
+
+function FruitSlice({
+  color,
+  position,
+  rotation,
+  scale = 1,
+}: {
+  color: string;
+  position: [number, number, number];
+  rotation: [number, number, number];
+  scale?: number;
+}) {
+  return (
+    <group position={position} rotation={rotation} scale={scale}>
+      <mesh castShadow>
+        <torusGeometry args={[0.28, 0.035, 12, 48]} />
+        <meshStandardMaterial color={color} roughness={0.5} />
+      </mesh>
+      <mesh>
+        <circleGeometry args={[0.27, 48]} />
+        <meshStandardMaterial
+          color="#fff6c5"
+          roughness={0.7}
+          side={THREE.DoubleSide}
+        />
+      </mesh>
+      {Array.from({ length: 8 }).map((_, index) => (
+        <mesh key={index} rotation={[0, 0, (index / 8) * Math.PI * 2]}>
+          <boxGeometry args={[0.23, 0.008, 0.01]} />
+          <meshStandardMaterial color={color} />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
+function LiquidOrbit() {
+  const liquidRef = useRef<THREE.Group>(null);
 
   useFrame(({ clock }) => {
-    const can = canRef.current;
-    if (!can) return;
-
-    const time = clock.elapsedTime;
-    can.position.y = Math.sin(time * 1.25 + index * 1.2) * 0.08;
-    can.rotation.y += 0.006 + index * 0.0015;
+    const liquid = liquidRef.current;
+    if (!liquid) return;
+    liquid.rotation.y = clock.elapsedTime * 0.22;
+    liquid.rotation.z = Math.sin(clock.elapsedTime * 0.55) * 0.08;
   });
 
   return (
-    <group
-      ref={canRef}
-      position={[flavor.x, 0, 0]}
-      rotation={[0, 0, flavor.rotate]}
-    >
-      <mesh castShadow receiveShadow>
-        <cylinderGeometry args={[0.68, 0.68, 2.35, 128, 1, false]} />
-        <meshPhysicalMaterial
-          clearcoat={0.68}
-          clearcoatRoughness={0.25}
-          map={texture}
-          metalness={0.06}
-          roughness={0.38}
+    <group ref={liquidRef}>
+      <mesh rotation={[Math.PI / 2.35, 0.1, 0]}>
+        <torusGeometry args={[1.55, 0.018, 12, 160]} />
+        <meshStandardMaterial
+          color="#bcefff"
+          emissive="#4dbce0"
+          emissiveIntensity={0.34}
+          transparent
+          opacity={0.62}
         />
       </mesh>
-
-      <mesh castShadow position={[0, 1.23, 0]}>
-        <cylinderGeometry args={[0.7, 0.68, 0.13, 128]} />
-        <meshPhysicalMaterial
-          color="#c7c2b7"
-          metalness={0.82}
-          roughness={0.22}
-        />
-      </mesh>
-
-      <mesh castShadow position={[0, -1.23, 0]}>
-        <cylinderGeometry args={[0.68, 0.7, 0.12, 128]} />
-        <meshPhysicalMaterial
-          color="#b9b4aa"
-          metalness={0.82}
-          roughness={0.25}
-        />
-      </mesh>
-
-      <mesh
-        castShadow
-        position={[0, 1.32, 0.14]}
-        rotation={[Math.PI / 2, 0, 0]}
-      >
-        <torusGeometry args={[0.17, 0.034, 12, 36]} />
-        <meshPhysicalMaterial
-          color="#d5d1c6"
-          metalness={0.88}
-          roughness={0.2}
-        />
-      </mesh>
-
-      <mesh position={[0, 1.315, 0.14]} rotation={[Math.PI / 2, 0, 0]}>
-        <boxGeometry args={[0.1, 0.03, 0.22]} />
-        <meshPhysicalMaterial
-          color="#b7b2a7"
-          metalness={0.8}
-          roughness={0.24}
+      <mesh rotation={[Math.PI / 2.15, 0.2, 0.4]}>
+        <torusGeometry args={[1.95, 0.012, 12, 160]} />
+        <meshStandardMaterial
+          color="#fff9c9"
+          emissive="#ffffff"
+          emissiveIntensity={0.4}
+          transparent
+          opacity={0.44}
         />
       </mesh>
     </group>
   );
 }
 
-function CansRig() {
+function HeroCan() {
+  const groupRef = useRef<THREE.Group>(null);
   const scrollRef = useRef<THREE.Group>(null);
   const pointerRef = useRef<THREE.Group>(null);
+  const labelTexture = useMemo(() => makeLabelTexture(heroFlavor), []);
+  const gltf = useLoader(GLTFLoader, canPath);
+  const model = useMemo(() => cloneWithMaterials(gltf.scene), [gltf.scene]);
   const { pointer, scene, size } = useThree();
 
-  useEffect(() => {
-    const rig = scrollRef.current;
-    if (!rig) return;
+  useEffect(() => () => labelTexture.dispose(), [labelTexture]);
 
-    const tween = gsap.to(rig.rotation, {
-      x: -0.16,
-      y: Math.PI * 0.32,
+  useEffect(() => {
+    const group = groupRef.current;
+    const scroll = scrollRef.current;
+    if (!group || !scroll) return;
+
+    gsap.set(group.scale, { x: 0.01, y: 0.01, z: 0.01 });
+    gsap.set(group.position, { y: -0.2 });
+
+    const intro = gsap.timeline({ delay: 1.25 });
+    intro
+      .to(group.scale, {
+        x: 1,
+        y: 1,
+        z: 1,
+        duration: 1.35,
+        ease: "back.out(1.35)",
+      })
+      .fromTo(
+        group.rotation,
+        { x: -0.6, y: -1.5, z: 0.18 },
+        { x: -0.16, y: -0.28, z: -0.12, duration: 1.35, ease: "power4.out" },
+        0,
+      );
+
+    const move = gsap
+      .timeline({
+        scrollTrigger: {
+          trigger: scene.userData.smoothContent ?? undefined,
+          start: "top top",
+          end: "70% bottom",
+          scrub: 1,
+        },
+      })
+      .to(scroll.position, { x: size.width < 768 ? 0 : -1.85, y: -1.05, z: 0 })
+      .to(scroll.rotation, { y: Math.PI * 1.2, z: 0.18 }, 0)
+      .to(scroll.scale, { x: 0.62, y: 0.62, z: 0.62 }, 0);
+
+    return () => {
+      intro.kill();
+      move.kill();
+    };
+  }, [scene, size.width]);
+
+  useFrame(({ clock }) => {
+    const group = groupRef.current;
+    const pointerGroup = pointerRef.current;
+    if (!group || !pointerGroup) return;
+
+    group.position.y = -0.06 + Math.sin(clock.elapsedTime * 1.15) * 0.08;
+    pointerGroup.rotation.y +=
+      (pointer.x * 0.18 - pointerGroup.rotation.y) * 0.035;
+    pointerGroup.rotation.x +=
+      (-pointer.y * 0.1 - pointerGroup.rotation.x) * 0.035;
+  });
+
+  return (
+    <group ref={scrollRef} position={[size.width < 768 ? 0 : 1.45, -0.1, 0]}>
+      <group ref={pointerRef}>
+        <group ref={groupRef} rotation={[-0.16, -0.28, -0.12]} scale={1.7}>
+          <primitive object={model} />
+          <LabelSleeve texture={labelTexture} />
+          <LiquidOrbit />
+          <FruitSlice
+            color="#f5d72e"
+            position={[-0.9, 1.05, 0.44]}
+            rotation={[0.3, 0.65, -0.5]}
+            scale={0.9}
+          />
+          <FruitSlice
+            color="#f5d72e"
+            position={[0.92, -0.28, 0.62]}
+            rotation={[0.6, -0.4, 0.8]}
+            scale={0.72}
+          />
+          <FruitSlice
+            color="#f5d72e"
+            position={[-0.58, -1.05, 0.36]}
+            rotation={[0.25, 0.2, 1.2]}
+            scale={0.58}
+          />
+        </group>
+      </group>
+    </group>
+  );
+}
+
+function SceneCameraRig() {
+  const { camera, scene } = useThree();
+
+  useEffect(() => {
+    const tween = gsap.to(camera.position, {
+      z: 6.2,
       ease: "none",
       scrollTrigger: {
-        trigger: scene.userData.mountElement ?? undefined,
-        start: "top bottom",
-        end: "bottom top",
+        trigger: scene.userData.smoothContent ?? undefined,
+        start: "top top",
+        end: "bottom bottom",
         scrub: true,
       },
     });
@@ -466,53 +488,36 @@ function CansRig() {
     return () => {
       tween.kill();
     };
-  }, [scene]);
+  }, [camera, scene]);
 
-  useFrame(() => {
-    const pointerRig = pointerRef.current;
-    const scrollRig = scrollRef.current;
-    if (!pointerRig || !scrollRig) return;
-
-    pointerRig.rotation.y += (pointer.x * 0.18 - pointerRig.rotation.y) * 0.035;
-    pointerRig.rotation.x +=
-      (-pointer.y * 0.08 - pointerRig.rotation.x) * 0.035;
-    scrollRig.scale.setScalar(size.width < 720 ? 0.7 : 1);
-  });
-
-  return (
-    <group ref={scrollRef}>
-      <group ref={pointerRef}>
-        {flavors.map((flavor, index) => (
-          <NumoCan flavor={flavor} index={index} key={flavor.label} />
-        ))}
-      </group>
-    </group>
-  );
+  return <HeroCan />;
 }
 
 export function CanScene() {
   const wrapRef = useRef<HTMLDivElement>(null);
 
   return (
-    <div ref={wrapRef} className="h-full min-h-112 w-full">
+    <div ref={wrapRef} className="pointer-events-none fixed inset-0 z-3">
       <Canvas
-        camera={{ fov: 35, position: [0, 0.2, 7.8] }}
+        camera={{ fov: 34, position: [0, 0.2, 7.4] }}
         dpr={[1, 2]}
         gl={{ alpha: true, antialias: true }}
         onCreated={({ scene }) => {
-          scene.userData.mountElement = wrapRef.current;
+          scene.userData.smoothContent = document.querySelector(
+            "[data-numo-smooth-content]",
+          );
         }}
         shadows
       >
-        <ambientLight intensity={1.15} />
-        <hemisphereLight args={["#fff8cf", "#317d99", 2.35]} />
-        <directionalLight castShadow intensity={3.5} position={[3.2, 4.5, 5]} />
+        <ambientLight intensity={1.45} />
+        <hemisphereLight args={["#fff8cf", "#2c9cc4", 2.65]} />
+        <directionalLight castShadow intensity={4.2} position={[3.4, 4.8, 5]} />
         <directionalLight
-          intensity={1.4}
-          position={[-4, 1.5, 3]}
-          color="#f6b8c9"
+          color="#f7b9cc"
+          intensity={1.6}
+          position={[-4, 1.4, 3]}
         />
-        <CansRig />
+        <SceneCameraRig />
       </Canvas>
     </div>
   );
