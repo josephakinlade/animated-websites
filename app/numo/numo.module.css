@@ -1,0 +1,370 @@
+.page {
+  --ink: #17110f;
+  --cream: #fbf2cf;
+  --lemon: #f5dd4d;
+  --raspberry: #f4b9ce;
+  --peach: #f3ad80;
+  --water: #54b9df;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background:
+    radial-gradient(
+      circle at 12% 8%,
+      rgb(255 255 255 / 0.7),
+      transparent 16rem
+    ),
+    radial-gradient(
+      circle at 82% 16%,
+      rgb(245 221 77 / 0.5),
+      transparent 18rem
+    ),
+    linear-gradient(180deg, #75d1ef 0%, #eaf8fa 46%, #fbf2cf 100%);
+  color: var(--ink);
+  font-family:
+    "PP Neue Montreal Medium",
+    Arial Rounded MT Bold,
+    Arial,
+    sans-serif;
+}
+
+.loader {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  background: var(--cream);
+  color: var(--ink);
+}
+
+.loaderWord {
+  overflow: hidden;
+  font-size: clamp(4rem, 18vw, 18rem);
+  line-height: 0.85;
+  letter-spacing: 0;
+}
+
+.loaderWord span {
+  display: block;
+}
+
+.hero {
+  position: relative;
+  min-height: 100dvh;
+  padding: 1.25rem;
+  isolation: isolate;
+}
+
+.water {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  overflow: hidden;
+  background:
+    radial-gradient(
+      ellipse at 20% 20%,
+      rgb(255 255 255 / 0.85),
+      transparent 16%
+    ),
+    radial-gradient(
+      ellipse at 80% 35%,
+      rgb(255 255 255 / 0.45),
+      transparent 20%
+    ),
+    linear-gradient(135deg, #5cc7ec 0%, #2d9cc7 45%, #96e3ef 100%);
+}
+
+.water::before,
+.water::after {
+  position: absolute;
+  inset: -25%;
+  content: "";
+  opacity: 0.32;
+  background-image:
+    repeating-linear-gradient(
+      115deg,
+      transparent 0 1.8rem,
+      rgb(255 255 255 / 0.38) 1.9rem 2rem
+    ),
+    repeating-linear-gradient(
+      35deg,
+      transparent 0 2.4rem,
+      rgb(255 255 255 / 0.28) 2.5rem 2.65rem
+    );
+  filter: blur(1px);
+  animation: tide 18s linear infinite;
+}
+
+.water::after {
+  opacity: 0.18;
+  transform: rotate(10deg);
+  animation-duration: 24s;
+  animation-direction: reverse;
+}
+
+.nav {
+  position: relative;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--ink);
+}
+
+.pillButton,
+.ghostButton {
+  position: relative;
+  display: inline-flex;
+  min-height: 3rem;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  padding: 0.75rem 1.1rem;
+  color: inherit;
+  text-decoration: none;
+  transition:
+    transform 0.45s cubic-bezier(0.165, 0.84, 0.44, 1),
+    box-shadow 0.45s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.pillButton {
+  background: var(--lemon);
+  box-shadow: 0 0.35rem 0 var(--ink);
+}
+
+.ghostButton {
+  background: rgb(255 255 255 / 0.28);
+  backdrop-filter: blur(18px);
+}
+
+.pillButton:hover,
+.ghostButton:hover {
+  transform: translateY(-0.25rem) rotate(-1deg);
+  box-shadow: 0 0.65rem 0 var(--ink);
+}
+
+.heroGrid {
+  display: grid;
+  min-height: calc(100dvh - 5rem);
+  grid-template-columns: minmax(0, 1fr);
+  align-items: end;
+  gap: 1.5rem;
+  padding: 2rem 0 0;
+}
+
+.headline {
+  max-width: 10ch;
+  font-size: clamp(4.8rem, 16vw, 16rem);
+  line-height: 0.78;
+  letter-spacing: 0;
+}
+
+.wordMask {
+  display: block;
+  overflow: hidden;
+}
+
+.word {
+  display: block;
+  transform: translateY(112%) rotate(4deg);
+}
+
+.heroCopy {
+  max-width: 34rem;
+  font-size: clamp(1.15rem, 2vw, 1.7rem);
+  line-height: 1.08;
+}
+
+.stageWrap {
+  position: relative;
+  min-height: 44vh;
+}
+
+.stageShell {
+  position: absolute;
+  inset: -8rem -2rem -3rem;
+}
+
+.sparkle {
+  position: absolute;
+  width: clamp(2rem, 5vw, 5rem);
+  aspect-ratio: 1;
+  color: var(--cream);
+  filter: drop-shadow(0 0.35rem 0 rgb(23 17 15 / 0.18));
+  animation: sparklePulse 2.8s ease-in-out infinite;
+}
+
+.sparkle::before,
+.sparkle::after {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  content: "";
+  background: currentColor;
+  clip-path: polygon(
+    50% 0%,
+    60% 38%,
+    100% 50%,
+    60% 62%,
+    50% 100%,
+    40% 62%,
+    0% 50%,
+    40% 38%
+  );
+}
+
+.sparkle::after {
+  inset: 24%;
+  color: var(--lemon);
+}
+
+.marquee {
+  display: flex;
+  overflow: hidden;
+  border-block: 2px solid var(--ink);
+  background: var(--lemon);
+  font-size: clamp(2.5rem, 8vw, 7rem);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.marquee span {
+  display: inline-flex;
+  min-width: max-content;
+  animation: marquee 18s linear infinite;
+}
+
+.section {
+  padding: clamp(5rem, 10vw, 10rem) 1.25rem;
+}
+
+.sectionInner {
+  max-width: 88rem;
+  margin: 0 auto;
+}
+
+.flavorGrid {
+  display: grid;
+  gap: 1rem;
+}
+
+.flavorCard {
+  position: relative;
+  min-height: 24rem;
+  overflow: hidden;
+  border: 2px solid var(--ink);
+  border-radius: 1.5rem;
+  padding: 1.25rem;
+  transform: translateZ(0);
+  transition:
+    transform 0.45s cubic-bezier(0.165, 0.84, 0.44, 1),
+    box-shadow 0.45s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.flavorCard:hover {
+  transform: translateY(-0.75rem) rotate(var(--tilt));
+  box-shadow: 0 1rem 0 var(--ink);
+}
+
+.flavorIcon {
+  position: absolute;
+  right: -1rem;
+  bottom: -1rem;
+  font-size: 12rem;
+  line-height: 1;
+  transform: rotate(-12deg);
+  transition: transform 0.45s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.flavorCard:hover .flavorIcon {
+  transform: rotate(5deg) scale(1.08);
+}
+
+.storyBand {
+  display: grid;
+  gap: 1rem;
+  border-block: 2px solid var(--ink);
+  background: #f8dce8;
+}
+
+.storyCard {
+  min-height: 22rem;
+  border: 2px solid var(--ink);
+  border-radius: 1.5rem;
+  background:
+    radial-gradient(
+      circle at 20% 20%,
+      rgb(255 255 255 / 0.55),
+      transparent 13rem
+    ),
+    var(--cream);
+  padding: clamp(1.25rem, 4vw, 3rem);
+}
+
+.footer {
+  display: grid;
+  gap: 2rem;
+  border-top: 2px solid var(--ink);
+  background: var(--ink);
+  padding: clamp(2rem, 5vw, 5rem) 1.25rem;
+  color: var(--cream);
+}
+
+@media (min-width: 768px) {
+  .heroGrid {
+    grid-template-columns: 1fr minmax(26rem, 44vw);
+    align-items: center;
+    gap: 0;
+    padding-top: 0;
+  }
+
+  .stageWrap {
+    min-height: 72vh;
+  }
+
+  .flavorGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .storyBand {
+    grid-template-columns: 1.15fr 0.85fr;
+  }
+
+  .footer {
+    grid-template-columns: 1fr auto;
+    align-items: end;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .water::before,
+  .water::after,
+  .sparkle,
+  .marquee span {
+    animation: none;
+  }
+
+  .word {
+    transform: none;
+  }
+}
+
+@keyframes tide {
+  to {
+    transform: translate3d(8%, 5%, 0) rotate(2deg);
+  }
+}
+
+@keyframes sparklePulse {
+  50% {
+    transform: rotate(12deg) scale(1.15);
+  }
+}
+
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
